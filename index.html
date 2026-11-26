@@ -1,0 +1,202 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مكتب ال هيبه</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial;background:#eef1f6;color:#222}
+.top{background:#0a1a3a;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:4px solid #d4af37}
+.logoBox{width:62px;height:62px;min-width:62px;border-radius:50%;background:#fff;border:3px solid #d4af37;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.logoBox img{width:100%;height:100%;object-fit:cover}
+.top h1{font-size:17px;margin:0;color:#d4af37;line-height:1.4}.top p{margin:2px 0 0;font-size:12px;color:#ddd}
+.btn{background:linear-gradient(#ffd700,#b8860b);color:#0a1a3a;border:none;padding:11px 15px;border-radius:12px;font-weight:900;cursor:pointer;margin:4px;box-shadow:0 4px 0 #7a5c00}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7a5c00}
+.btn2{background:#fff;border:2px solid #d4af37;box-shadow:none}
+.card{background:#fff;border-radius:14px;padding:15px;margin:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-top:4px solid #d4af37}
+input,select,textarea{width:100%;padding:11px;margin:6px 0;border:2px solid #ddd;border-radius:10px;font-family:inherit;font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:14px}th{background:#0a1a3a;color:#d4af37;padding:8px}td{padding:8px;border-bottom:1px solid #eee}
+.nav{display:flex;flex-wrap:wrap;padding:10px;background:#fff}
+.stat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.stat div{background:#0a1a3a;color:#fff;padding:14px;border-radius:12px;text-align:center}.stat b{color:#ffd700;font-size:22px;display:block}
+.hidden{display:none}.badge{background:#e74c3c;color:#fff;padding:2px 8px;border-radius:20px;font-size:11px}.badge2{background:#f39c12;color:#fff;padding:2px 8px;border-radius:20px;font-size:11px}
+@media(max-width:600px){.stat{grid-template-columns:1fr}.top h1{font-size:15px}}
+</style>
+</head>
+<body>
+<div class="top">
+<div class="logoBox"><img src="logo.jpg" onerror="this.style.display='none'"></div>
+<div><h1>مكتب ال هيبه للاستشارات القانونية والضريبية</h1><p>نظام إدارة العملاء | كحلي × دهبي</p></div>
+<div style="margin-inline-start:auto;text-align:left"><b id="userLbl"></b><br><button class="btn btn2" onclick="location.reload()">خروج</button></div>
+</div>
+
+
+<div id="login" style="max-width:430px;margin:25px auto;background:#fff;padding:22px;border-radius:18px;text-align:center;border-top:6px solid #d4af37">
+<div class="logoBox" style="width:120px;height:120px;margin:0 auto"><img src="logo.jpg" onerror="this.style.display='none'"></div>
+<h2 style="color:#0a1a3a">تسجيل الدخول</h2>
+<input id="u" placeholder="اليوزر - ashraf" autocomplete="off">
+<input id="p" type="password" placeholder="الباسورد" autocomplete="off">
+<button class="btn" style="width:100%" onclick="doLogin()">دخول</button>
+<p id="err" style="color:red;font-weight:900"></p>
+<p style="font-size:13px;color:#555">أدمن: ashraf | يوزر 1: haiba | يوزر 2: khald</p>
+<hr>
+<p style="font-size:13px">اختار ملف العملاء CSV - أول مرة بس:</p>
+<input type="file" accept=".csv" onchange="loadCSVFile(this.files[0])">
+</div>
+
+
+<div id="app" class="hidden">
+<div class="nav">
+<button class="btn" onclick="show('dash')">📊 الإحصائيات</button>
+<button class="btn" onclick="show('search')">🔍 البحث والعملاء</button>
+<button class="btn" onclick="show('add')">➕ تسجيل بيانات</button>
+<button class="btn" onclick="show('docs')">📁 مستندات العميل</button>
+<button class="btn" onclick="show('alerts')">🔔 تنبيهات</button>
+<button class="btn" onclick="show('reports')">📋 التقارير</button>
+<button class="btn" onclick="show('msgs')">💬 الرسائل</button>
+</div>
+
+
+<div id="dash" class="card"><h2>الإحصائيات</h2><div class="stat"><div>إجمالي العملاء<b id="cTotal">0</b></div><div>تنتهي خلال 30 يوم<b id="c30">0</b></div><div>خلال 15 يوم<b id="c15">0</b></div></div><div id="groups" style="margin-top:10px"></div><button class="btn" onclick="window.print()">🖨️ طباعة</button></div>
+
+
+<div id="search" class="card hidden"><h2>بحث العملاء</h2><input id="q" placeholder="ابحث بالاسم أو رقم التسجيل أو رقم الملف أو الموبايل" oninput="render()"><select id="grpF" onchange="render()"><option value="">كل المجموعات</option></select><div style="overflow:auto"><table><thead><tr><th>الاسم</th><th>الموبايل</th><th>رقم الملف بالمكتب</th><th>التسجيل الضريبي</th><th>النشاط</th><th>انتهاء البطاقة</th><th>إجراء</th></tr></thead><tbody id="tbody"></tbody></table></div><div><button class="btn" onclick="firstP()">⏮ الأول</button><button class="btn" onclick="prevP()">◀ السابق</button><span id="pg"></span><button class="btn" onclick="nextP()">التالي ▶</button><button class="btn" onclick="lastP()">الأخير ⏭</button><button class="btn btn2" onclick="exportCSV()">📥 تصدير CSV</button><button class="btn btn2" onclick="printClient()">🖨️ طباعة ملف العميل</button></div><p id="selInfo" style="background:#fff8dc;padding:8px;border-radius:8px"></p></div>
+
+
+<div id="add" class="card hidden"><h2 id="formTitle">تسجيل بيانات عميل جديد</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="form"></div><label>ملاحظات</label><textarea id="f_ملاحظات"></textarea><button class="btn" onclick="saveClient()">💾 إضافة / حفظ</button><button class="btn btn2" onclick="clearForm()">مسح</button><p id="saveMsg"></p></div>
+
+
+<div id="docs" class="card hidden">
+<h2>📁 مستندات العميل</h2>
+<p id="docClientName" style="background:#fff8dc;padding:10px;border-radius:10px;font-weight:900">اختار عميل الأول من شاشة البحث</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+<select id="docType" style="flex:1">
+<option>التوكيل</option>
+<option>عقد الايجار</option>
+<option>البطاقة الضريبية</option>
+<option>السجل التجارى</option>
+<option>بطاقة الرقم القومى</option>
+<option>الاقرار الضريبى</option>
+<option>رخص التشغيل</option>
+<option>الحماية المدنية</option>
+<option>مستندات اخرى</option>
+</select>
+<input type="file" id="docFile" accept="image/*,.pdf" style="flex:1">
+<button class="btn" onclick="uploadDoc()">📤 رفع المستند</button>
+</div>
+<div id="docGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
+</div>
+
+
+<div id="alerts" class="card hidden"><h2>🔔 تنبيهات الانتهاء - 30 يوم و 15 يوم</h2><div id="alertList"></div></div>
+
+
+<div id="reports" class="card hidden"><h2>التقارير</h2><button class="btn" onclick="report('card')">تقرير البطاقات المنتهية</button><button class="btn" onclick="report('segl')">تقرير السجل التجاري المنتهي</button><button class="btn" onclick="report('all')">كل التقارير</button><button class="btn btn2" onclick="window.print()">طباعة</button><div id="repOut"></div></div>
+
+
+<div id="msgs" class="card hidden"><h2>💬 الرسائل بين الأدمن واليوزر</h2><div id="msgList" style="background:#f7f7f7;padding:10px;border-radius:10px;min-height:100px"></div><input id="msgIn" placeholder="اكتب رسالتك..."><button class="btn" onclick="sendMsg()">إرسال</button></div>
+</div>
+
+
+<script>
+let DATA=[];
+let users={ashraf:{pass:"Aa01022559523",role:"admin",name:"الأدمن"},haiba:{pass:"haiba123",role:"edit",name:"يوزر 1"},khald:{pass:"khald123",role:"view",name:"يوزر 2"}};
+let cur=null,page=0,per=20,selected=null;
+let msgs=JSON.parse(localStorage.getItem('heba_msgs')||'[]');
+let local=JSON.parse(localStorage.getItem('heba_extra')||'[]');
+let DOCS=JSON.parse(localStorage.getItem('heba_docs')||'{}');
+function doLogin(){
+let u=document.getElementById('u').value.trim().toLowerCase();
+let p=document.getElementById('p').value.trim();
+if(users[u] && users[u].pass===p){cur={u,...users[u]};enterApp();}
+else document.getElementById('err').textContent="اليوزر أو الباسورد غلط";
+}
+function enterApp(){
+let saved=JSON.parse(localStorage.getItem('heba_all_data')||'[]');
+if(saved.length>0){DATA=saved;}
+document.getElementById('login').style.display='none';
+document.getElementById('app').classList.remove('hidden');
+document.getElementById('userLbl').textContent=cur.name;
+if(cur.role==='view') alert('وضع اطلاع فقط');
+buildForm();tryLoadCSV();render();updateStats();show('dash');
+}
+function show(id){['dash','search','add','alerts','reports','msgs','docs'].forEach(x=>document.getElementById(x).classList.add('hidden'));document.getElementById(id).classList.remove('hidden');if(id==='alerts')renderAlerts();if(id==='msgs')renderMsgs();if(id==='docs')renderDocs();}
+function daysLeft(d){if(!d)return 9999;let dt=new Date(d);if(isNaN(dt)){let p=String(d).split('/');if(p.length===3)dt=new Date(p[2],p[1]-1,p[0]);}if(isNaN(dt))return 9999;return Math.ceil((dt-new Date())/86400000);}
+function fmt(v){if(!v)return '';return String(v);}
+function parseCSV(text){
+text=text.replace(/^\uFEFF/,'');
+let rows=[];let cur='';let row=[];let inQ=false;
+for(let i=0;i<text.length;i++){let c=text[i];
+if(c==='"'){if(inQ && text[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+else if(c===',' && !inQ){row.push(cur);cur='';}
+else if(c==='\n' && !inQ){row.push(cur);rows.push(row);row=[];cur='';}
+else if(c!=='\r'){cur+=c;}}
+if(cur||row.length){row.push(cur);rows.push(row);}
+let head=rows[0].map(h=>h.trim());
+return rows.slice(1).filter(r=>r.join('').trim()).map(r=>{let o={};head.forEach((h,idx)=>o[h]=(r[idx]||'').trim());return o;});
+}
+async function tryLoadCSV(){
+let saved=JSON.parse(localStorage.getItem('heba_all_data')||'[]');
+if(saved.length>0){DATA=saved;buildGroups();render();updateStats();return;}
+try{let r=await fetch('العملاء.csv');if(!r.ok)return;let t=await r.text();DATA=parseCSV(t).concat(local);buildGroups();render();updateStats();}catch(e){}
+}
+function loadCSVFile(f){let rd=new FileReader();rd.onload=e=>{DATA=parseCSV(e.target.result).concat(local);localStorage.setItem('heba_all_data',JSON.stringify(DATA));buildGroups();render();updateStats();alert('تم تحميل '+DATA.length+' عميل ✅ - اتحفظوا جوه الموقع');};rd.readAsText(f,'utf-8');}
+function updateStats(){document.getElementById('cTotal').textContent=DATA.length;document.getElementById('c30').textContent=DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))<=30&&daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))>=0).length;document.getElementById('c15').textContent=DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))<=15).length;}
+function buildGroups(){let s=new Set(DATA.map(x=>x['مجموعة النشاط']).filter(Boolean));let sel=document.getElementById('grpF');sel.innerHTML='<option value="">كل المجموعات</option>'+[...s].map(g=>`<option>${g}</option>`).join('');document.getElementById('groups').innerHTML=[...s].slice(0,30).map(g=>`<span style="display:inline-block;background:#eee;padding:5px 10px;border-radius:20px;margin:3px">${g}: ${DATA.filter(x=>x['مجموعة النشاط']===g).length}</span>`).join('');}
+let FIELDS=['الاسم','رقم الموبايل','المأمورية','رقم الملف بالمكتب','العنوان','رقم الملف','تاريخ انتهاء البطاقة الضريبية','مجموعة النشاط','النشاط','التسجيل الضريبى','السجل التجارى','جهة الاصدار','تاريخ انتهاء السجل','رقم التوكيل بالمكتب','رقم التوكيل','سنة الاصدار','الشهر العقارى','رقم المنشأة','الرقم التأمينى','مكتب التأمينات','الايميل','الباسورد'];
+let GROUPS=['نشاط مهنى','أطباء','بقالة','استيراد وتصدير','أدوات كهربائية','انشطه خاصة بالسيارات','انشطة متنوعه','خرداوات','ملابس','احذية','مقاولات','محمول','حلاقة وعلافة','انشطة خاصة بالاستثمار','مقاهى','مفروشات','تنجيد','مخابز','مصوغات ومجوهرات','انشطه جديده'];
+function buildForm(){document.getElementById('form').innerHTML=FIELDS.map(f=>{if(f==='مجموعة النشاط')return `<div><label>${f}</label><select id="f_${f}"><option value="">اختر</option>${GROUPS.map(g=>`<option>${g}</option>`).join('')}</select></div>`;let t=f.includes('تاريخ')?'date':'text';return `<div><label>${f}</label><input id="f_${f}" type="${t}"></div>`}).join('');}
+function filtered(){let q=(document.getElementById('q').value||'').trim(),g=document.getElementById('grpF').value;return DATA.filter(x=>(!q||JSON.stringify(x).includes(q))&&(!g||x['مجموعة النشاط']===g));}
+function render(){let f=filtered();let total=Math.max(1,Math.ceil(f.length/per));if(page>=total)page=total-1;let slice=f.slice(page*per,(page+1)*per);document.getElementById('tbody').innerHTML=slice.map(x=>{let d=daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']));let badge=d<=15?'<span class="badge">ينتهي قريب</span>':d<=30?'<span class="badge2">30 يوم</span>':'';return `<tr onclick="selectClient(${DATA.indexOf(x)})" style="cursor:pointer"><td>${x['الاسم']||''}</td><td>${x['رقم الموبايل']||''}</td><td>${x['رقم الملف بالمكتب']||''}</td><td>${x['التسجيل الضريبى']||''}</td><td>${x['النشاط']||''}</td><td>${fmt(x['تاريخ انتهاء البطاقة الضريبية'])} ${badge}</td><td><button onclick="event.stopPropagation();editClient(${DATA.indexOf(x)})">تعديل</button> ${cur.role==='admin'?`<button onclick="event.stopPropagation();delClient(${DATA.indexOf(x)})">حذف</button>`:''}</td></tr>`}).join('');document.getElementById('pg').textContent=` صفحة ${page+1} من ${total} - إجمالي ${f.length} `;}
+function selectClient(i){selected=DATA[i];document.getElementById('selInfo').innerHTML=`<b>العميل:</b> ${selected['الاسم']} | موبايل: ${selected['رقم الموبايل']} | ملف: ${selected['رقم الملف بالمكتب']} | عنوان: ${selected['العنوان']} | تسجيل: ${selected['التسجيل الضريبى']}`;}
+function editClient(i){if(cur.role==='view'){alert('اطلاع فقط');return;}let x=DATA[i];selected=x;show('add');document.getElementById('formTitle').textContent='تعديل: '+x['الاسم'];FIELDS.forEach(f=>{let el=document.getElementById('f_'+f);if(el)el.value=fmt(x[f]);});window._editIdx=i;}
+function clearForm(){FIELDS.forEach(f=>{let el=document.getElementById('f_'+f);if(el)el.value=''});window._editIdx=null;document.getElementById('formTitle').textContent='تسجيل بيانات عميل جديد';}
+function saveClient(){if(cur.role==='view'){alert('اطلاع فقط');return;}let obj={};FIELDS.forEach(f=>obj[f]=document.getElementById('f_'+f)?.value||'');if(!obj['الاسم']){alert('اكتب الاسم');return;}if(window._editIdx!=null){DATA[window._editIdx]=obj;}else{DATA.unshift(obj);local.unshift(obj);localStorage.setItem('heba_extra',JSON.stringify(local));}localStorage.setItem('heba_all_data',JSON.stringify(DATA));document.getElementById('saveMsg').textContent='✅ تم الحفظ';render();updateStats();clearForm();}
+function delClient(i){if(cur.role!=='admin'){alert('الحذف للأدمن فقط');return;}if(confirm('متأكد من حذف '+DATA[i]['الاسم']+'؟')){DATA.splice(i,1);localStorage.setItem('heba_all_data',JSON.stringify(DATA));render();updateStats();}}
+function firstP(){page=0;render()}function lastP(){page=Math.ceil(filtered().length/per)-1;render()}function prevP(){if(page>0)page--;render()}function nextP(){if(page<Math.ceil(filtered().length/per)-1)page++;render()}
+function getClientKey(){if(!selected) return null;return (selected['رقم الملف بالمكتب']||selected['الاسم']||'').toString().trim() || selected['الاسم'];}
+function uploadDoc(){
+if(!selected){alert('اختار عميل الأول من شاشة البحث والعملاء');show('search');return;}
+let f=document.getElementById('docFile').files[0];
+if(!f){alert('اختار صورة أو PDF الأول');return;}
+let type=document.getElementById('docType').value;
+let rd=new FileReader();
+rd.onload=e=>{
+let key=getClientKey();
+if(!DOCS[key]) DOCS[key]=[];
+DOCS[key].push({type:type, name:f.name, data:e.target.result, date:new Date().toLocaleString('ar-EG')});
+try{localStorage.setItem('heba_docs', JSON.stringify(DOCS));}catch(err){alert('مساحة التخزين اتملت - امسح صور قديمة أو صغر حجم الصورة');DOCS[key].pop();return;}
+document.getElementById('docFile').value='';
+renderDocs();
+alert('تم رفع '+type+' ✅');
+};
+rd.readAsDataURL(f);
+}
+function renderDocs(){
+let grid=document.getElementById('docGrid');
+let nameEl=document.getElementById('docClientName');
+if(!selected){nameEl.textContent='اختار عميل الأول من شاشة البحث';grid.innerHTML='';return;}
+let key=getClientKey();
+nameEl.textContent='العميل: '+(selected['الاسم']||'')+' | ملف: '+(selected['رقم الملف بالمكتب']||'');
+let list=DOCS[key]||[];
+if(!list.length){grid.innerHTML='<p>لسه مفيش مستندات للعميل ده. ارفع أول مستند من فوق.</p>';return;}
+grid.innerHTML=list.map((d,i)=>{
+let isImg=d.data.startsWith('data:image');
+let preview=isImg?`<img src="${d.data}" style="width:100%;height:120px;object-fit:cover;border-radius:8px" onclick="window.open('${d.data}')">`:`<div style="background:#eee;height:120px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:40px">📄</div>`;
+return `<div style="border:2px solid #d4af37;border-radius:12px;padding:8px;background:#fff">
+${preview}
+<b>${d.type}</b><br><small>${d.name||''} - ${d.date||''}</small><br>
+<a href="${d.data}" download="${d.name||'doc'}" target="_blank"><button class="btn btn2">عرض / تحميل</button></a>
+<button class="btn btn2" onclick="deleteDoc(${i})" style="color:red;border-color:red">حذف</button>
+</div>`;
+}).join('');
+}
+function deleteDoc(i){if(!confirm('متأكد من حذف المستند ده؟')) return;let key=getClientKey();DOCS[key].splice(i,1);localStorage.setItem('heba_docs', JSON.stringify(DOCS));renderDocs();}
+function renderAlerts(){let a=DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))<=30).sort((x,y)=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))-daysLeft(fmt(y['تاريخ انتهاء البطاقة الضريبية'])));document.getElementById('alertList').innerHTML=a.length?a.slice(0,100).map(x=>`<div style="padding:8px;border-bottom:1px solid #eee">🔔 <b>${x['الاسم']}</b> - تنتهي ${fmt(x['تاريخ انتهاء البطاقة الضريبية'])} - متبقي ${daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))} يوم - ${x['رقم الموبايل']}</div>`).join(''):'لا توجد تنبيهات';}
+function report(t){let list=t==='card'?DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))<=30):t==='segl'?DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء السجل']))<=30):DATA.filter(x=>daysLeft(fmt(x['تاريخ انتهاء البطاقة الضريبية']))<=30||daysLeft(fmt(x['تاريخ انتهاء السجل']))<=30);document.getElementById('repOut').innerHTML=`<h3>عدد النتائج: ${list.length}</h3>`+list.slice(0,100).map(x=>`<div>${x['الاسم']} - بطاقة: ${fmt(x['تاريخ انتهاء البطاقة الضريبية'])} - سجل: ${fmt(x['تاريخ انتهاء السجل'])} - ${x['رقم الموبايل']}</div>`).join('');}
+function exportCSV(){let rows=[FIELDS];filtered().forEach(x=>rows.push(FIELDS.map(f=>fmt(x[f]))));let csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');let b=new Blob(['\ufeff'+csv],{type:'text/csv'});let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='heba_clients.csv';a.click();}
+function printClient(){if(!selected){alert('اختار عميل من الجدول الأول');return;}let w=window.open('','_blank');w.document.write(`<div dir="rtl" style="font-family:Tahoma"><h2>ملف العميل - مكتب ال هيبه</h2>${Object.entries(selected).map(([k,v])=>`<p><b>${k}:</b> ${fmt(v)}</p>`).join('')}<button onclick="window.print()">طباعة</button></div>`);}
+function renderMsgs(){document.getElementById('msgList').innerHTML=msgs.map(m=>`<div><b>${m.u}:</b> ${m.t} <small>${m.time||''}</small></div>`).join('')||'لا توجد رسائل';}
+function sendMsg(){let t=document.getElementById('msgIn').value;if(!t)return;msgs.push({u:cur.u,t,time:new Date().toLocaleString('ar-EG')});localStorage.setItem('heba_msgs',JSON.stringify(msgs));document.getElementById('msgIn').value='';renderMsgs();}
+</script>
+</body>
+</html>
